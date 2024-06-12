@@ -3,7 +3,7 @@
 example usage:
 
 ```rust
-use tencentcloud-cls-sdk-rust::{LogGroupList, LogGroup, Content, Log, LogProducer};
+use tencentcloud - cls-sdk-rust::{LogGroupList, LogGroup, Content, Log, LogProducer};
 
 fn main() {
 	// create a async runtime
@@ -25,7 +25,7 @@ fn main() {
 	
 	let result = rt
 		.block_on(producer.put_logs(
-			"23eaa499-b7a9-4a60-a628-49a4239ddbba".to_string(),
+			"".to_string(),
 			&log_group_list,
 		))
 		.unwrap();
