@@ -10,7 +10,7 @@ use crate::cls_log::{Log, LogGroup, LogGroupList};
 use crate::cls_log::mod_Log::Content;
 use crate::cls_log_json::Logs;
 use crate::consts::headers::{LOG_COMPRESS_TYPE, USER_AGENT_VALUE};
-use crate::error::Error;
+use crate::error::LogProducerError;
 use crate::sign::signature;
 
 pub mod cls_log;
@@ -27,7 +27,26 @@ pub struct LogProducer<'a> {
 }
 
 impl<'a> LogProducer<'a> {
-    pub fn new(access_key: &'a str, access_secret: &'a str, host: &'a str) -> Result<Self, Error> {
+    pub fn new(
+        access_key: &'a str,
+        access_secret: &'a str,
+        host: &'a str,
+    ) -> Result<Self, LogProducerError> {
+        if access_key.is_empty() {
+            Err(LogProducerError::InvalidParameter {
+                error_message: "access_key is empty".to_string(),
+            })?;
+        }
+        if access_secret.is_empty() {
+            Err(LogProducerError::InvalidParameter {
+                error_message: "access_secret is empty".to_string(),
+            })?;
+        }
+        if host.is_empty() {
+            Err(LogProducerError::InvalidParameter {
+                error_message: "host is empty".to_string(),
+            })?;
+        }
         Ok(Self {
             access_key,
             access_secret,
@@ -40,7 +59,7 @@ impl<'a> LogProducer<'a> {
         &self,
         topic_id: String,
         data: &str,
-    ) -> Result<reqwest::Response, Error> {
+    ) -> Result<reqwest::Response, LogProducerError> {
         let logs: Logs = serde_json::from_str(data).unwrap();
         let mut log_group_list = LogGroupList::default();
         let mut log_group: LogGroup = LogGroup::default();
@@ -75,7 +94,7 @@ impl<'a> LogProducer<'a> {
         &self,
         topic_id: String,
         log_group: &LogGroupList<'_>,
-    ) -> Result<reqwest::Response, Error> {
+    ) -> Result<reqwest::Response, LogProducerError> {
         let buf = log_group.encode()?;
         let compressed = zstd::encode_all(buf.as_ref(), 3)?;
         let request = self
@@ -89,7 +108,11 @@ impl<'a> LogProducer<'a> {
         Ok(self.send(request).await?)
     }
 
-    fn new_request(&self, method: Method, path: String) -> Result<RequestBuilder, Error> {
+    fn new_request(
+        &self,
+        method: Method,
+        path: String,
+    ) -> Result<RequestBuilder, LogProducerError> {
         let url = Url::from_str(&*format!("https://{}{}", self.host, path))?;
         let date = Utc::now().format("%a,%d%b%Y %H:%M:%S GMT").to_string();
         let request = self
@@ -101,7 +124,7 @@ impl<'a> LogProducer<'a> {
         Ok(request)
     }
 
-    async fn send(&self, request: RequestBuilder) -> Result<reqwest::Response, Error> {
+    async fn send(&self, request: RequestBuilder) -> Result<reqwest::Response, LogProducerError> {
         let mut request = request.build()?;
         let mut headers: HashMap<String, String> = HashMap::new();
         let mut params: HashMap<String, String> = HashMap::new();

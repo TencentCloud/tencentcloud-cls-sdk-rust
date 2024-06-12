@@ -1,5 +1,5 @@
 #[derive(thiserror::Error, Debug)]
-pub enum Error {
+pub enum LogProducerError {
     #[error("io error")]
     IO(#[from] std::io::Error),
     #[error("transport error")]
@@ -16,4 +16,6 @@ pub enum Error {
     },
     #[error("protobuf error")]
     Protobuf(#[from] quick_protobuf::Error),
+    #[error("invalid parameter. message: {error_message}")]
+    InvalidParameter { error_message: String },
 }
