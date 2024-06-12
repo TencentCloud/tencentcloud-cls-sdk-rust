@@ -878,6 +878,8 @@ dependencies = [
  "quick-protobuf",
  "reqwest",
  "rustc-serialize",
+ "serde",
+ "serde_json",
  "sha1",
  "thiserror",
  "tokio",

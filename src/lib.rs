@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::str::FromStr;
 
@@ -5,12 +6,15 @@ use chrono::Utc;
 use reqwest::{Client, Method, RequestBuilder, Url};
 use reqwest::header::{CONTENT_LENGTH, CONTENT_TYPE, DATE, HOST, USER_AGENT};
 
-use crate::cls_log::LogGroupList;
+use crate::cls_log::{Log, LogGroup, LogGroupList};
+use crate::cls_log::mod_Log::Content;
+use crate::cls_log_json::Logs;
 use crate::consts::headers::{LOG_COMPRESS_TYPE, USER_AGENT_VALUE};
 use crate::error::Error;
 use crate::sign::signature;
 
 pub mod cls_log;
+mod cls_log_json;
 mod consts;
 pub mod error;
 pub mod sign;
@@ -32,13 +36,48 @@ impl<'a> LogProducer<'a> {
         })
     }
 
+    pub async fn put_logs_json(
+        &self,
+        topic_id: String,
+        data: &str,
+    ) -> Result<reqwest::Response, Error> {
+        let logs: Logs = serde_json::from_str(data).unwrap();
+        let mut log_group_list = LogGroupList::default();
+        let mut log_group: LogGroup = LogGroup::default();
+        if logs.source.is_some() {
+            log_group.source = Option::Some(Cow::from(logs.source.unwrap()));
+        }
+
+        if logs.filename.is_some() {
+            log_group.filename = Option::Some(Cow::from(logs.filename.unwrap()));
+        }
+
+        if logs.hostname.is_some() {
+            log_group.hostname = Option::Some(Cow::from(logs.hostname.unwrap()));
+        }
+
+        logs.logs.iter().for_each(|item| {
+            let mut log: Log = Log::default();
+            log.time = item.time;
+            item.contents.iter().for_each(|content| {
+                log.contents
+                    .push(Content::new(content.key.as_str(), content.value.as_str()));
+            });
+            log_group.logs.push(log);
+        });
+
+        log_group_list.logGroupList.push(log_group);
+
+        Ok(self.put_logs(topic_id, &log_group_list).await?)
+    }
+
     pub async fn put_logs(
         &self,
         topic_id: String,
         log_group: &LogGroupList<'_>,
     ) -> Result<reqwest::Response, Error> {
         let buf = log_group.encode()?;
-        let compressed = zstd::encode_all(buf.as_ref(), 3).unwrap();
+        let compressed = zstd::encode_all(buf.as_ref(), 3)?;
         let request = self
             .new_request(Method::POST, "/structuredlog".to_string())?
             .query(&[("topic_id", topic_id)])
