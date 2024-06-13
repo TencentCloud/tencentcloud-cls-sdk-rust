@@ -95,6 +95,12 @@ impl<'a> LogProducer<'a> {
         topic_id: String,
         log_group: &LogGroupList<'_>,
     ) -> Result<reqwest::Response, LogProducerError> {
+        if topic_id.is_empty() {
+            Err(LogProducerError::InvalidParameter {
+                error_message: "topic_id is empty".to_string(),
+            })?;
+        }
+
         let buf = log_group.encode()?;
         let compressed = zstd::encode_all(buf.as_ref(), 3)?;
         let request = self
