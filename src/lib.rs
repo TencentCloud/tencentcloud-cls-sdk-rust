@@ -141,8 +141,8 @@ impl LogProducer {
         let _ = pairs.map(|(key, value)| params.insert(key.to_string(), value.to_string()));
 
         let sign_str = signature(
-            self.access_key.as_str(),
-            self.access_secret.as_str(),
+            self.access_key.clone().as_str(),
+            self.access_secret.clone().as_str(),
             request.method().as_str(),
             request.url().path(),
             &params,
