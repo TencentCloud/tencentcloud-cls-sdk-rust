@@ -1,6 +1,6 @@
 [package]
 name = "tencentcloud-cls-sdk-rust"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 authors = ["farmerx <farmerx@163.com>"]
 description = "腾讯云日志服务CLS SDK"
@@ -11,7 +11,7 @@ license = "Apache-2.0"
 url = "2.5.0"
 thiserror = "1.0"
 chrono = "0.4"
-sha1 = "0.6.0"
+sha1 = "0.6.1"
 rustc-serialize = "0.3"
 quick-protobuf = "0.8"
 bytes = "1.6.0"
@@ -21,5 +21,5 @@ lz4_flex = { version = "0.11" }
 zstd = "0.13.1"
 serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
-reqwest = { version = "0.12", features = ["rustls-tls"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
 
