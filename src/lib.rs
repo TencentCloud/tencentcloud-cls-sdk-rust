@@ -209,11 +209,12 @@ mod tests {
 
         if let Ok(producer) = producer {
             let logs = "{\"filename\":\"\",\"source\":\"127.0.0.2\",\"hostname\":\"\",\"logs\":[{\"time\":1718247083,\"contents\":[{\"value\":\"hello\",\"key\":\"world\"}]},{\"time\":1718247083,\"contents\":[{\"value\":\"hi\",\"key\":\"hey\"}]}]}";
+
             let result = rt
-                .block_on(
-                    producer
-                        .put_logs_json("23eaa499-b7a9-4a60-a628-49a4239ddbba".to_string(), logs),
-                )
+                .block_on(producer.put_logs_json(
+                    "23eaa499-b7a9-4a60-a628-49a4239ddbba".to_string(),
+                    logs.to_string(),
+                ))
                 .unwrap();
             let text = rt.block_on(result.text()).unwrap();
             println!("{}", text);
