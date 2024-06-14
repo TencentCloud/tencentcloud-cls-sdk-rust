@@ -19,18 +19,18 @@ mod consts;
 pub mod error;
 pub mod sign;
 
-pub struct LogProducer<'a> {
-    access_key: &'a str,
-    access_secret: &'a str,
-    host: &'a str,
+pub struct LogProducer {
+    access_key: String,
+    access_secret: String,
+    host: String,
     client: Client,
 }
 
-impl<'a> LogProducer<'a> {
+impl LogProducer {
     pub fn new(
-        access_key: &'a str,
-        access_secret: &'a str,
-        host: &'a str,
+        access_key: String,
+        access_secret: String,
+        host: String,
     ) -> Result<Self, LogProducerError> {
         if access_key.is_empty() {
             Err(LogProducerError::InvalidParameter {
@@ -141,8 +141,8 @@ impl<'a> LogProducer<'a> {
         let _ = pairs.map(|(key, value)| params.insert(key.to_string(), value.to_string()));
 
         let sign_str = signature(
-            self.access_key,
-            self.access_secret,
+            self.access_key.as_str(),
+            self.access_secret.as_str(),
             request.method().as_str(),
             request.url().path(),
             &params,
@@ -170,7 +170,12 @@ mod tests {
     fn send_logs() {
         // create a async runtime
         let rt = tokio::runtime::Runtime::new().unwrap();
-        let producer = LogProducer::new("", "", "ap-guangzhou-open.cls.tencentcs.com").unwrap();
+        let producer = LogProducer::new(
+            "".to_string(),
+            "".to_string(),
+            "ap-guangzhou-open.cls.tencentcs.com".to_string(),
+        )
+        .unwrap();
 
         // Create a new Log with default timestamp (now)
         let mut log: Log = Log::default();
@@ -196,7 +201,11 @@ mod tests {
     fn send_logs_json() {
         // create a async runtime
         let rt = tokio::runtime::Runtime::new().unwrap();
-        let producer = LogProducer::new("", "", "ap-guangzhou-open.cls.tencentcs.com");
+        let producer = LogProducer::new(
+            "".to_string(),
+            "".to_string(),
+            "ap-guangzhou-open.cls.tencentcs.com".to_string(),
+        );
 
         if let Ok(producer) = producer {
             let logs = "{\"filename\":\"\",\"source\":\"127.0.0.2\",\"hostname\":\"\",\"logs\":[{\"time\":1718247083,\"contents\":[{\"value\":\"hello\",\"key\":\"world\"}]},{\"time\":1718247083,\"contents\":[{\"value\":\"hi\",\"key\":\"hey\"}]}]}";
