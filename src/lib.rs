@@ -58,9 +58,9 @@ impl LogProducer {
     pub async fn put_logs_json(
         &self,
         topic_id: String,
-        data: &str,
+        data: String,
     ) -> Result<reqwest::Response, LogProducerError> {
-        let logs: Logs = serde_json::from_str(data).unwrap();
+        let logs: Logs = serde_json::from_str(data.as_str()).unwrap();
         let mut log_group_list = LogGroupList::default();
         let mut log_group: LogGroup = LogGroup::default();
         if logs.source.is_some() {
