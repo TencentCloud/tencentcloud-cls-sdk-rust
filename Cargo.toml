@@ -1,6 +1,6 @@
 [package]
 name = "tencentcloud-cls-sdk-rust"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 authors = ["farmerx <farmerx@163.com>"]
 description = "腾讯云日志服务CLS SDK"
